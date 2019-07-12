@@ -187,10 +187,12 @@ class App:
         self.running_label.config(text="Processing...")
 
         progress = [0]
-        ProcessThread(threading.Event(), 15, 0.1, progress).start()
+        event = threading.Event()
+        process_thread = ProcessThread(event, 15, 0.1, progress).start()
         while True:
 
             if self.stop_processes:
+                event.set()
                 return
 
             # print('Main thread: ' + str(progress[0]))
@@ -207,6 +209,7 @@ class App:
         self.running_timer.config(text="5.0 seconds remaining")
 
     def return_to_start(self):
+        self.stop_processes = True
         self.running_label.config(text="Running...")
         self.running_timer.config(text="5.0 seconds remaining")
         self.advance_screen(0)

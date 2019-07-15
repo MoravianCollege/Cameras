@@ -14,7 +14,9 @@ video = parser.parse_args().video
 try:
     video = int(video)
 except ValueError:
-    pass
+    video = 0
+
+
 
 class ProcessThread(threading.Thread):
     def __init__(self, event, length, interval, progress):
@@ -69,8 +71,9 @@ class App:
         self.length_title = Label(self.main_screen, text="Length of Test", font=("Times New Roman", 24), pady=50, wraplength=self.width - 200.0, justify=CENTER)
         self.length_title.pack()
 
-        self.length_box = Entry(self.main_screen, font=("Times New Roman", 24), justify=CENTER)
-        self.length_box.insert(INSERT, "5.0")
+        self.length_setting = StringVar()
+        self.length_setting.set("5.0")
+        self.length_box = Entry(self.main_screen, textvariable=self.length_setting, font=("Times New Roman", 24), justify=CENTER)
         self.length_box.pack()
 
         self.start_button = Button(self.main_screen, text="Start", font=("Times New Roman", 24), width=15, pady=10, command=self.advance_screen)
@@ -170,6 +173,10 @@ class App:
         self.stop_processes = False
 
         start_time = time.time()
+        try:
+            run_time = float(self.length_setting.get())
+        except:
+            run_time = 15.0
 
         while True:
 
@@ -177,11 +184,11 @@ class App:
                 return
 
             elapsed_time = time.time() - start_time
-            if elapsed_time >= 5.0:
+            if elapsed_time >= run_time:
                 # self.advance_screen()
                 break
             else:
-                self.running_timer.config(text=(str(np.round((5.0 - elapsed_time) * 10)/10) + " seconds remaining"))
+                self.running_timer.config(text=(str(np.round((run_time - elapsed_time) * 10)/10) + " seconds remaining"))
                 self.running_timer.update()
 
         self.running_label.config(text="Processing...")
@@ -206,12 +213,13 @@ class App:
             time.sleep(0.1)
 
         self.running_label.config(text="Running...")
-        self.running_timer.config(text="5.0 seconds remaining")
+        self.running_timer.config(text=str(run_time) + " seconds remaining")
 
     def return_to_start(self):
+
+        start_time = time.time()
+
         self.stop_processes = True
-        self.running_label.config(text="Running...")
-        self.running_timer.config(text="5.0 seconds remaining")
         self.advance_screen(0)
 
     def advance_screen(self, new_screen=-1):
@@ -247,7 +255,7 @@ root.overrideredirect(True)
 root.overrideredirect(False)
 root.attributes("-fullscreen", True)
 
-app = App(root)
+app = App(root, video)
 
 root.mainloop()
 root.destroy()

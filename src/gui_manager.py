@@ -8,8 +8,6 @@ import numpy as np
 from argparse import ArgumentParser
 from gui import App
 
-from tkinter import *
-
 
 parser = ArgumentParser()
 parser.add_argument('--video', default='0', dest='video', type=str, help='The path to a video or number of the camera used for capture.')
@@ -39,10 +37,9 @@ class ProcessThread(threading.Thread):
 
 class GUIManager:
 
-    def __init__(self, master, camera_source=0):
+    def __init__(self, camera_source=0):
 
         self.current_screen = 0
-        self.app = App(self, master)
         self.run_time = 15.0
 
         self.stop_processes = False
@@ -54,12 +51,16 @@ class GUIManager:
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         self.writer = cv2.VideoWriter('output.mp4', fourcc, 30, (vid_width, vid_height))
 
-    def start(self, time):
+    def run_gui(self):
+        self.app = App(self)
+        self.app.start_gui()
+
+    def start(self, camera_time, time):
         self.current_screen = 1
         self.app.set_screen(self.current_screen)
         self.run_time = time
 
-        self.run_camera_screen()
+        self.run_camera_screen(camera_time)
 
     def return_to_start(self):
         self.stop_processes = True
@@ -106,25 +107,7 @@ class GUIManager:
         elif self.current_screen == 1:
             self.run_camera_screen()
 
-    def run_running_screen(self):
-
-        self.stop_processes = False
-
-        start_time = time.time()
-
-        while True:
-
-            if self.stop_processes:
-                return
-
-            elapsed_time = time.time() - start_time
-            if elapsed_time >= self.run_time:
-                # self.advance_screen()
-                break
-            else:
-                self.update_running_screen(str(np.round((self.run_time - elapsed_time) * 10) / 10) + " seconds remaining")
-
-        self.update_running_screen(title="Processing...")
+    def do_processing(self):
 
         progress = [0]
         event = threading.Event()
@@ -145,14 +128,36 @@ class GUIManager:
 
         event.set()
 
+    def run_running_screen(self):
+
+        self.stop_processes = False
+
+        start_time = time.time()
+
+        while True:
+
+            if self.stop_processes:
+                return
+
+            elapsed_time = time.time() - start_time
+            if elapsed_time >= self.run_time:
+                # self.advance_screen()
+                break
+            else:
+                self.update_running_screen(str(np.round((self.run_time - elapsed_time) * 10) / 10) + " seconds remaining")
+
+        self.update_running_screen(title="Processing...")
+
+        self.do_processing()
+
         self.update_running_screen(str(self.run_time) + " seconds remaining", "Running...")
 
-    def run_camera_screen(self):
+    def run_camera_screen(self, camera_time):
         start_time = time.time()
 
         while True:
             elapsed_time = time.time() - start_time
-            if elapsed_time >= 5.0:
+            if elapsed_time >= camera_time:
                 self.advance_screen()
                 break
 
@@ -162,15 +167,3 @@ class GUIManager:
                 break
 
             self.update_camera_screen(str(np.round((5.0 - elapsed_time) * 10) / 10), frame)
-
-
-root = Tk()
-
-root.overrideredirect(True)
-root.overrideredirect(False)
-root.attributes("-fullscreen", True)
-
-app = GUIManager(root, video)
-
-root.mainloop()
-root.destroy()

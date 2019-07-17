@@ -3,13 +3,7 @@ from tkinter import *
 
 class App:
 
-    def __init__(self, parent):
-
-        self.master = Tk()
-
-        self.master.overrideredirect(True)
-        self.master.overrideredirect(False)
-        self.master.attributes("-fullscreen", True)
+    def __init__(self, parent, master):
 
         self.parent = parent
 
@@ -19,7 +13,7 @@ class App:
         border_width = 10
 
         #Main Screen
-        self.main_screen = Frame(self.master, borderwidth=border_width, relief=relief_pattern)
+        self.main_screen = Frame(master, borderwidth=border_width, relief=relief_pattern)
         self.main_screen.place(relwidth=1.0, relheight=1.0)
 
         self.width = self.main_screen.winfo_screenwidth()
@@ -45,7 +39,7 @@ class App:
 
 
         #Countdown Screen
-        self.countdown_screen = Frame(self.master, borderwidth=border_width, relief=relief_pattern)
+        self.countdown_screen = Frame(master, borderwidth=border_width, relief=relief_pattern)
 
         self.camera_image = Label(self.countdown_screen)
         self.camera_image.pack()
@@ -59,7 +53,7 @@ class App:
 
 
         #Running Screen
-        self.running_screen = Frame(self.master, borderwidth=border_width, relief=relief_pattern)
+        self.running_screen = Frame(master, borderwidth=border_width, relief=relief_pattern)
         # self.running_screen = Button(self.running_screen, text="Continue", font=("Times New Roman", 24), width=15, pady=10, command=self.advance_screen)
         # self.running_screen.pack()
 
@@ -74,7 +68,7 @@ class App:
 
 
         #Results Screen
-        self.results_screen = Frame(self.master, borderwidth=border_width, relief=relief_pattern)
+        self.results_screen = Frame(master, borderwidth=border_width, relief=relief_pattern)
 
         Label(self.results_screen, text="Results", font=("Times New Roman", 64), justify=CENTER, pady=50.0).pack()
 
@@ -85,10 +79,8 @@ class App:
         self.back_button = Button(self.results_screen, text="Back", font=("Times New Roman", 24), width=15, pady=10, command=self.parent.return_to_start)
         self.back_button.pack()
 
+        self.master = master
         self.screens = [self.main_screen, self.countdown_screen, self.running_screen, self.results_screen]
-
-    def start_gui(self):
-        self.master.mainloop()
 
     def start_button(self):
 
@@ -99,12 +91,9 @@ class App:
         except:
             pass
 
-        self.parent.start(5.0, run_time)
+        self.parent.start(run_time)
 
     def set_screen(self, new_screen):
         self.screens[self.current_screen].place_forget()
         self.screens[new_screen].place(relwidth=1.0, relheight=1.0)
         self.current_screen = new_screen
-
-    def __del__(self):
-        self.master.destroy()

@@ -1,4 +1,4 @@
-from gui_manager import GUIManager
+from Cameras.gui_manager import GUIManager
 from unittest.mock import MagicMock, patch
 
 manager = GUIManager()

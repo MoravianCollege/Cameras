@@ -5,8 +5,7 @@ import time
 import threading
 
 from argparse import ArgumentParser
-from gui import App
-from tkinter import *
+from Cameras.gui import App
 
 
 # Import OpenPose and necessary libraries for OpenPose
@@ -89,23 +88,27 @@ class ProcessThread(threading.Thread):
 
 
 class GUIManager:
-
-    def __init__(self, master, camera_source=0):
+    def __init__(self, camera_source=0):
         self.current_screen = 0
-        self.app = App(self, master)
         self.run_time = 15.0
         self.stop_processes = False
+
         self.camera_source = camera_source
         self.cap = cv2.VideoCapture(self.camera_source)
         self.vid_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.vid_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.data = []
 
+    def run_gui(self):
+        self.app = App(self)
+        self.app.start_gui()
 
-    def start(self, time):
+    def start(self, countdown_time, time):
         self.current_screen = 1
         self.app.set_screen(self.current_screen)
+        self.countdown_time = countdown_time
         self.run_time = time
+
         self.cap = cv2.VideoCapture(self.camera_source)
         self.run_camera_screen()
         self.cap.release()
@@ -117,7 +120,6 @@ class GUIManager:
         self.app.set_screen(self.current_screen)
 
     def update_camera_screen(self, status, frame):
-
         img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Fix color
         img_ratio = 2 / 3
         img = PIL.Image.fromarray(img).resize((int(img_ratio * self.app.width), int(img_ratio * self.app.height)), PIL.Image.ANTIALIAS)
@@ -130,7 +132,6 @@ class GUIManager:
         self.app.camera_image.update()
 
     def update_running_screen(self, status="", title=""):
-
         if title != "":
             self.app.running_label.config(text=title)
             self.app.running_label.update()
@@ -140,7 +141,6 @@ class GUIManager:
             self.app.running_timer.update()
 
     def advance_screen(self, new_screen=-1):
-
         if new_screen != -1:
             self.current_screen = new_screen
 
@@ -159,8 +159,26 @@ class GUIManager:
             self.run_camera_screen()
             self.cap.release()
 
-    def run_running_screen(self):
+    def do_processing(self):
+        progress = [0]
+        event = threading.Event()
+        process_thread = ProcessThread(event, progress, self).start()
+        while True:
+            if self.stop_processes:
+                event.set()
+                return
 
+            delta = 0.0001
+            if -delta < abs(progress[0] - 1) < delta:
+                self.advance_screen()
+                break
+
+            self.update_running_screen('{:3.1f}%'.format(100 * progress[0]))
+            time.sleep(0.1)
+
+        event.set()
+
+    def run_running_screen(self):
         self.stop_processes = False
 
         start_time = time.time()
@@ -180,35 +198,16 @@ class GUIManager:
                 self.update_running_screen(str(np.round((self.run_time - elapsed_time) * 10) / 10) + " seconds remaining")
 
         self.update_running_screen("0.0%", "Processing...")
+        self.do_processing()
         self.cap.release()
-
-        progress = [0]
-        event = threading.Event()
-        process_thread = ProcessThread(event, progress, self).start()
-        while True:
-            if self.stop_processes:
-                event.set()
-                return
-
-            delta = 0.0001
-            if -delta < abs(progress[0] - 1) < delta:
-                self.advance_screen()
-                break
-
-            self.update_running_screen('{:3.1f}%'.format(100 * progress[0]))
-            time.sleep(0.1)
-
-        event.set()
-
         self.update_running_screen(str(self.run_time) + " seconds remaining", "Running...")
 
     def run_camera_screen(self):
-        # time.sleep(1)
         start_time = time.time()
 
         while True:
             elapsed_time = time.time() - start_time
-            if elapsed_time >= 5.0:
+            if elapsed_time >= self.countdown_time:
                 self.advance_screen()
                 break
 
@@ -217,16 +216,4 @@ class GUIManager:
             if frame is None:
                 break
 
-            self.update_camera_screen(str(np.round((5.0 - elapsed_time) * 10) / 10), frame)
-
-
-root = Tk()
-
-root.overrideredirect(True)
-root.overrideredirect(False)
-root.attributes("-fullscreen", True)
-
-app = GUIManager(root, video)
-
-root.mainloop()
-root.destroy()
+            self.update_camera_screen(str(np.round((self.countdown_time - elapsed_time) * 10) / 10), frame)

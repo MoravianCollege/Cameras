@@ -1,4 +1,3 @@
-
 from tkinter import *
 
 class App:
@@ -42,7 +41,6 @@ class App:
 
         self.start_button = Button(self.main_screen, text="Start", font=("Times New Roman", 24), width=15, pady=10, command=self.start_button)
         self.start_button.pack()
-
 
         #Countdown Screen
         self.countdown_screen = Frame(self.master, borderwidth=border_width, relief=relief_pattern)

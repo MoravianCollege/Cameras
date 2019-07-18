@@ -140,6 +140,16 @@ class GUIManager:
         self.current_screen = 0
         self.app.set_screen(self.current_screen)
 
+    def update_result_screen(self, frame):
+        img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Fix color
+        img_ratio = 2 / 3
+        img = PIL.Image.fromarray(img).resize((int(img_ratio * self.app.width), int(img_ratio * self.app.height)),
+                                              PIL.Image.ANTIALIAS)
+        display_image = PIL.ImageTk.PhotoImage(master=self.app.results_screen, image=img)
+        self.app.result_image.config(image=display_image)
+
+        self.app.result_image.update()
+
     def update_camera_screen(self, status, frame):
         img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Fix color
         img_ratio = 2 / 3

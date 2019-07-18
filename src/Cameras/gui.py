@@ -79,9 +79,12 @@ class App:
 
         Label(self.results_screen, text="Results", font=("Times New Roman", 64), justify=CENTER, pady=50.0).pack()
 
+        self.result_image = Label(self.results_screen)
+        self.result_image.pack()
+
         results = "Sway averaged 0.2 m/s/s across the test."
-        self.main_instructions = Label(self.results_screen, text=results, font=("Times New Roman", 36), pady=50, wraplength=self.width - 200.0, justify=CENTER)
-        self.main_instructions.pack()
+        self.end_results = Label(self.results_screen, text=results, font=("Times New Roman", 36), pady=50, wraplength=self.width - 200.0, justify=CENTER)
+        self.end_results.pack()
 
         self.back_button = Button(self.results_screen, text="Back", font=("Times New Roman", 24), width=15, pady=10, command=self.parent.return_to_start)
         self.back_button.pack()

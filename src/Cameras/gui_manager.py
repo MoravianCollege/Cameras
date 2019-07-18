@@ -49,11 +49,12 @@ class ProcessThread(threading.Thread):
         threading.Thread.__init__(self)
         self.stopped = event
         self.progress = progress
-        self.data = gui.data
+        self.data = (gui.open_data, gui.closed_data)
         gui.cap.release()
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        self.writer = cv2.VideoWriter('output/processed_output.mp4', fourcc, 30, (gui.vid_width, gui.vid_height))
-        self.vid_length = len(self.data)
+        self.writer_open = cv2.VideoWriter('output/processed_output_open_eyes.mp4', fourcc, 30, (gui.vid_width, gui.vid_height))
+        self.writer_closed = cv2.VideoWriter('output/processed_output_closed_eyes.mp4', fourcc, 30, (gui.vid_width, gui.vid_height))
+        self.length = len(self.data[0]) + len(self.data[1])
 
         # OpenPose setup
         params = dict()
@@ -65,30 +66,48 @@ class ProcessThread(threading.Thread):
         self.opWrapper.start()
         self.datum = op.Datum()
 
+    def end_process(self, text='Process ended...'):
+        print(text)
+        self.writer_open.release()
+        self.writer_closed.release()
+
     def run(self):
         frames_completed = 0
+        finished_open = False
+        length_open = len(self.data[0])
+        if self.length <= 0:
+            self.stopped.set()
+            self.end_process('Processing failed...')
+            return
         while not self.stopped.isSet():
             # Process a frame from the file
-            if len(self.data) == 0:
-                print('Processing failed...')
-                self.writer.release()
-                return
-            self.datum.cvInputData = self.data[frames_completed]
+            frame = frames_completed
+            if finished_open:
+                frame -= length_open
+            self.datum.cvInputData = self.data[1 if finished_open else 0][frame]
             self.opWrapper.emplaceAndPop([self.datum])
-            self.writer.write(self.datum.cvOutputData)
+            if finished_open:
+                self.writer_closed.write(self.datum.cvOutputData)
+            else:
+                self.writer_open.write(self.datum.cvOutputData)
 
             frames_completed += 1
-            self.progress[0] = frames_completed / self.vid_length
-            if frames_completed >= self.vid_length:
+            self.progress[0] = frames_completed / self.length
+            if frames_completed >= self.length:
                 self.stopped.set()
-                print('Processing complete...')
-                self.writer.release()
+                self.end_process('Processing complete...')
                 return
-        self.writer.release()
+            if frames_completed == length_open:
+                finished_open = True
+        self.end_process('Processing terminated...')
 
 
 class GUIManager:
     def __init__(self, camera_source=0):
+        # Constants
+        self.OPEN_EYES = True
+        self.CLOSED_EYES = False
+
         self.current_screen = 0
         self.run_time = 15.0
         self.stop_processes = False
@@ -97,7 +116,7 @@ class GUIManager:
         self.cap = cv2.VideoCapture(self.camera_source)
         self.vid_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.vid_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self.data = []
+        self.open_data, self.closed_data = [], []
 
     def run_gui(self):
         self.app = App(self)
@@ -178,7 +197,8 @@ class GUIManager:
 
         event.set()
 
-    def do_running(self):
+    def do_running(self, eye_status):
+        # eye_status is whether or not the eyes are open: 1 for open, 0 for closed
 
         start_time = time.time()
 
@@ -187,7 +207,12 @@ class GUIManager:
                 return
 
             ret_val, frame = self.cap.read()
-            self.data.append(frame)
+            if eye_status == self.CLOSED_EYES:
+                self.closed_data.append(frame)
+            elif eye_status == self.OPEN_EYES:
+                self.open_data.append(frame)
+            else:
+                return
 
             elapsed_time = time.time() - start_time
             if elapsed_time >= self.run_time:
@@ -199,7 +224,7 @@ class GUIManager:
     def run_running_screen(self):
         self.stop_processes = False
 
-        self.do_running()
+        self.do_running(self.OPEN_EYES)
 
         self.update_running_screen(str(self.countdown_time) + " seconds remaining", "Close eyes for second recording")
 
@@ -218,7 +243,7 @@ class GUIManager:
 
         self.update_running_screen(str(self.countdown_time) + " seconds remaining", "Running...")
 
-        self.do_running()
+        self.do_running(self.CLOSED_EYES)
 
         self.update_running_screen("0.0%", "Processing...")
         self.do_processing()

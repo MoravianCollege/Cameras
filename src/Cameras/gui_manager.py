@@ -18,12 +18,12 @@ try:
     # Windows Import
     if platform == 'win32':
         # Change variables to point to the python release folder (Release/x64 etc.)
-        sys.path.append(dir_path + '/../../openpose/windows/python/openpose/Release');
+        sys.path.append(dir_path + '/../../openpose/windows/python/openpose/Release')
         os.environ['PATH'] = os.environ['PATH'] + ';' + dir_path + '/../../openpose/windows/x64/Release;' + dir_path + '/../../openpose/windows/bin;'
         import pyopenpose as op
     else:
         # Change variables to point to the python release folder
-        sys.path.append('../../openpose/unix/build/python');
+        sys.path.append('openpose/unix/build/python')
         from openpose import pyopenpose as op
 except ImportError as e:
     print('Error: OpenPose library could not be found. Was `BUILD_PYTHON` enabled in CMake when OpenPose was built? Is the python script in the right folder?')

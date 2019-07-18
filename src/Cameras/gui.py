@@ -31,12 +31,15 @@ class App:
         self.main_instructions = Label(self.main_screen, text=instructions, font=("Times New Roman", 24), pady=50, wraplength=self.width - 200.0, justify=CENTER)
         self.main_instructions.pack()
 
-        self.length_title = Label(self.main_screen, text="Length of Test", font=("Times New Roman", 24), pady=50, wraplength=self.width - 200.0, justify=CENTER)
+        self.length_title = Label(self.main_screen, text="Length of Test (seconds)", font=("Times New Roman", 24), wraplength=self.width - 200.0, justify=CENTER)
         self.length_title.pack()
+
+        self.length_container = Frame(self.main_screen, pady=20)
+        self.length_container.pack()
 
         self.length_setting = StringVar()
         self.length_setting.set("5.0")
-        self.length_box = Entry(self.main_screen, textvariable=self.length_setting, font=("Times New Roman", 24), justify=CENTER)
+        self.length_box = Entry(self.length_container, textvariable=self.length_setting, font=("Times New Roman", 24), justify=CENTER)
         self.length_box.pack()
 
         self.start_button = Button(self.main_screen, text="Start", font=("Times New Roman", 24), width=15, pady=10, command=self.start_button)

@@ -181,7 +181,9 @@ class GUIManager:
 
         self.app.set_screen(self.current_screen)
 
-        if self.current_screen == 2:
+        if self.current_screen == 3:
+            self.run_results_screen()
+        elif self.current_screen == 2:
             self.cap = cv2.VideoCapture(self.camera_source)
             self.run_running_screen()
             self.cap.release()
@@ -277,3 +279,20 @@ class GUIManager:
                 break
 
             self.update_camera_screen(str(np.round((self.countdown_time - elapsed_time) * 10) / 10), frame)
+
+    def get_video_frames(self, video):
+        frames = []
+        cap = cv2.VideoCapture(video)
+        ret_val, frame = cap.read()
+        while frame is not None:
+            frames.append(frame)
+            ret_val, frame = cap.read()
+        cap.release()
+        return frames
+
+    def run_results_screen(self):
+        frames = self.get_video_frames('output/processed_output_open_eyes.mp4')
+        frames += self.get_video_frames('output/processed_output_closed_eyes.mp4')
+        while not self.stop_processes:
+            for frame in frames:
+                self.update_result_screen(frame)

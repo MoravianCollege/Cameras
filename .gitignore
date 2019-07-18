@@ -1,3 +1,5 @@
-output.mp4
+*.egg-info
+*.mp4
 .venv
 .DS_Store
+__pycache__

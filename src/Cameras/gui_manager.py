@@ -178,8 +178,7 @@ class GUIManager:
 
         event.set()
 
-    def run_running_screen(self):
-        self.stop_processes = False
+    def do_running(self):
 
         start_time = time.time()
 
@@ -196,6 +195,30 @@ class GUIManager:
                 break
             else:
                 self.update_running_screen(str(np.round((self.run_time - elapsed_time) * 10) / 10) + " seconds remaining")
+
+    def run_running_screen(self):
+        self.stop_processes = False
+
+        self.do_running()
+
+        self.update_running_screen(str(self.countdown_time) + " seconds remaining", "Close eyes for second recording")
+
+        start_time = time.time()
+
+        while True:
+            if self.stop_processes:
+                return
+
+            elapsed_time = time.time() - start_time
+            if elapsed_time >= self.countdown_time:
+                # self.advance_screen()
+                break
+            else:
+                self.update_running_screen(str(np.round((self.countdown_time - elapsed_time) * 10) / 10) + " seconds remaining")
+
+        self.update_running_screen(str(self.countdown_time) + " seconds remaining", "Running...")
+
+        self.do_running()
 
         self.update_running_screen("0.0%", "Processing...")
         self.do_processing()

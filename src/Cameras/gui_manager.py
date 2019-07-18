@@ -116,6 +116,8 @@ class GUIManager:
         self.cap = cv2.VideoCapture(self.camera_source)
         self.vid_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.vid_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.fps = self.cap.get(cv2.CAP_PROP_FPS)
+
         self.open_data, self.closed_data = [], []
 
     def run_gui(self):
@@ -198,9 +200,9 @@ class GUIManager:
         event.set()
 
     def do_running(self, eye_status):
-        # eye_status is whether or not the eyes are open: 1 for open, 0 for closed
-
-        start_time = time.time()
+        # eye_status is whether or not the eyes are open
+        total_frames = int(self.fps * self.run_time)
+        current_frame = 0
 
         while True:
             if self.stop_processes:
@@ -213,13 +215,13 @@ class GUIManager:
                 self.open_data.append(frame)
             else:
                 return
+            current_frame += 1
 
-            elapsed_time = time.time() - start_time
-            if elapsed_time >= self.run_time:
+            if current_frame >= total_frames:
                 # self.advance_screen()
                 break
             else:
-                self.update_running_screen(str(np.round((self.run_time - elapsed_time) * 10) / 10) + " seconds remaining")
+                self.update_running_screen(str(np.round((self.run_time - (current_frame / self.fps)) * 10) / 10) + " seconds remaining")
 
     def run_running_screen(self):
         self.stop_processes = False
@@ -252,7 +254,7 @@ class GUIManager:
 
     def run_camera_screen(self):
         start_time = time.time()
-
+        elapsed_time = 0
         while True:
             elapsed_time = time.time() - start_time
             if elapsed_time >= self.countdown_time:

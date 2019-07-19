@@ -50,7 +50,6 @@ class ProcessThread(threading.Thread):
         self.stopped = event
         self.progress = progress
         self.data = (gui.open_data, gui.closed_data)
-        gui.cap.release()
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         self.writer_open = cv2.VideoWriter('output/processed_output_open_eyes.mp4', fourcc, 30, (gui.vid_width, gui.vid_height))
         self.writer_closed = cv2.VideoWriter('output/processed_output_closed_eyes.mp4', fourcc, 30, (gui.vid_width, gui.vid_height))
@@ -130,9 +129,7 @@ class GUIManager:
         self.countdown_time = countdown_time
         self.run_time = time
 
-        self.cap = cv2.VideoCapture(self.camera_source)
         self.run_camera_screen()
-        self.cap.release()
 
     def return_to_start(self):
         self.stop_processes = True
@@ -184,13 +181,9 @@ class GUIManager:
         if self.current_screen == 3:
             self.run_results_screen()
         elif self.current_screen == 2:
-            self.cap = cv2.VideoCapture(self.camera_source)
             self.run_running_screen()
-            self.cap.release()
         elif self.current_screen == 1:
-            self.cap = cv2.VideoCapture(self.camera_source)
             self.run_camera_screen()
-            self.cap.release()
 
     def do_processing(self):
         progress = [0]
@@ -261,7 +254,6 @@ class GUIManager:
 
         self.update_running_screen("0.0%", "Processing...")
         self.do_processing()
-        self.cap.release()
         self.update_running_screen(str(self.run_time) + " seconds remaining", "Running...")
 
     def run_camera_screen(self):

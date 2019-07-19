@@ -16,21 +16,21 @@ import os
 import sys
 from sys import platform
 
-# dir_path = os.path.dirname(os.path.realpath(__file__))
-# try:
-#     # Windows Import
-#     if platform == 'win32':
-#         # Change variables to point to the python release folder (Release/x64 etc.)
-#         sys.path.append(dir_path + '/../../openpose/windows/python/openpose/Release')
-#         os.environ['PATH'] = os.environ['PATH'] + ';' + dir_path + '/../../openpose/windows/x64/Release;' + dir_path + '/../../openpose/windows/bin;'
-#         import pyopenpose as op
-#     else:
-#         # Change variables to point to the python release folder
-#         sys.path.append('openpose/unix/build/python')
-#         from openpose import pyopenpose as op
-# except ImportError as e:
-#     print('Error: OpenPose library could not be found. Was `BUILD_PYTHON` enabled in CMake when OpenPose was built? Is the python script in the right folder?')
-#     raise e
+dir_path = os.path.dirname(os.path.realpath(__file__))
+try:
+    # Windows Import
+    if platform == 'win32':
+        # Change variables to point to the python release folder (Release/x64 etc.)
+        sys.path.append(dir_path + '/../../openpose/windows/python/openpose/Release')
+        os.environ['PATH'] = os.environ['PATH'] + ';' + dir_path + '/../../openpose/windows/x64/Release;' + dir_path + '/../../openpose/windows/bin;'
+        import pyopenpose as op
+    else:
+        # Change variables to point to the python release folder
+        sys.path.append('openpose/unix/build/python')
+        from openpose import pyopenpose as op
+except ImportError as e:
+    print('Error: OpenPose library could not be found. Was `BUILD_PYTHON` enabled in CMake when OpenPose was built? Is the python script in the right folder?')
+    raise e
 
 
 # Get video flag
@@ -63,10 +63,10 @@ class ProcessThread(threading.Thread):
         params['model_folder'] = 'openpose/models/'
         params['face'] = True
         params['hand'] = True
-        # self.opWrapper = op.WrapperPython()
-        # self.opWrapper.configure(params)
-        # self.opWrapper.start()
-        # self.datum = op.Datum()
+        self.opWrapper = op.WrapperPython()
+        self.opWrapper.configure(params)
+        self.opWrapper.start()
+        self.datum = op.Datum()
 
     def end_process(self, text='Process ended...'):
         print(text)

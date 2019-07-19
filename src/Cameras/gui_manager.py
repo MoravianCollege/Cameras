@@ -4,6 +4,9 @@ import PIL.Image, PIL.ImageTk
 import time
 import threading
 
+from pydub import AudioSegment
+from pydub.playback import play
+
 from argparse import ArgumentParser
 from Cameras.gui import App
 
@@ -118,6 +121,9 @@ class GUIManager:
         self.fps = self.cap.get(cv2.CAP_PROP_FPS)
 
         self.open_data, self.closed_data = [], []
+
+    def get_alert_sound(self):
+        self.ding_sound = AudioSegment.from_wav("./src/Cameras/Ding.wav")
 
     def run_gui(self):
         self.app = App(self)
@@ -251,6 +257,8 @@ class GUIManager:
         self.update_running_screen(str(self.countdown_time) + " seconds remaining", "Running...")
 
         self.do_running(self.CLOSED_EYES)
+
+        play(self.ding_sound)
 
         self.update_running_screen("0.0%", "Processing...")
         self.do_processing()

@@ -4,6 +4,9 @@ import PIL.Image, PIL.ImageTk
 import time
 import threading
 
+from pydub import AudioSegment
+from pydub.playback import play
+
 from argparse import ArgumentParser
 from Cameras.gui import App
 
@@ -13,21 +16,21 @@ import os
 import sys
 from sys import platform
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
-try:
-    # Windows Import
-    if platform == 'win32':
-        # Change variables to point to the python release folder (Release/x64 etc.)
-        sys.path.append(dir_path + '/../../openpose/windows/python/openpose/Release')
-        os.environ['PATH'] = os.environ['PATH'] + ';' + dir_path + '/../../openpose/windows/x64/Release;' + dir_path + '/../../openpose/windows/bin;'
-        import pyopenpose as op
-    else:
-        # Change variables to point to the python release folder
-        sys.path.append('openpose/unix/build/python')
-        from openpose import pyopenpose as op
-except ImportError as e:
-    print('Error: OpenPose library could not be found. Was `BUILD_PYTHON` enabled in CMake when OpenPose was built? Is the python script in the right folder?')
-    raise e
+# dir_path = os.path.dirname(os.path.realpath(__file__))
+# try:
+#     # Windows Import
+#     if platform == 'win32':
+#         # Change variables to point to the python release folder (Release/x64 etc.)
+#         sys.path.append(dir_path + '/../../openpose/windows/python/openpose/Release')
+#         os.environ['PATH'] = os.environ['PATH'] + ';' + dir_path + '/../../openpose/windows/x64/Release;' + dir_path + '/../../openpose/windows/bin;'
+#         import pyopenpose as op
+#     else:
+#         # Change variables to point to the python release folder
+#         sys.path.append('openpose/unix/build/python')
+#         from openpose import pyopenpose as op
+# except ImportError as e:
+#     print('Error: OpenPose library could not be found. Was `BUILD_PYTHON` enabled in CMake when OpenPose was built? Is the python script in the right folder?')
+#     raise e
 
 
 # Get video flag
@@ -60,10 +63,10 @@ class ProcessThread(threading.Thread):
         params['model_folder'] = 'openpose/models/'
         params['face'] = True
         params['hand'] = True
-        self.opWrapper = op.WrapperPython()
-        self.opWrapper.configure(params)
-        self.opWrapper.start()
-        self.datum = op.Datum()
+        # self.opWrapper = op.WrapperPython()
+        # self.opWrapper.configure(params)
+        # self.opWrapper.start()
+        # self.datum = op.Datum()
 
     def end_process(self, text='Process ended...'):
         print(text)
@@ -118,6 +121,9 @@ class GUIManager:
         self.fps = self.cap.get(cv2.CAP_PROP_FPS)
 
         self.open_data, self.closed_data = [], []
+
+    def get_alert_sound(self):
+        self.ding_sound = AudioSegment.from_wav("./src/Cameras/Ding.wav")
 
     def run_gui(self):
         self.app = App(self)
@@ -252,6 +258,8 @@ class GUIManager:
 
         self.do_running(self.CLOSED_EYES)
 
+        play(self.ding_sound)
+
         self.update_running_screen("0.0%", "Processing...")
         self.do_processing()
         self.update_running_screen(str(self.run_time) + " seconds remaining", "Running...")
@@ -288,3 +296,4 @@ class GUIManager:
         while not self.stop_processes:
             for frame in frames:
                 self.update_result_screen(frame)
+                time.sleep(2.0/self.fps)

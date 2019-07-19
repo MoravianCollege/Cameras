@@ -139,7 +139,7 @@ class GUIManager:
 
     def return_to_start(self):
         self.stop_processes = True
-
+        self.open_data, self.closed_data = [], []
         self.current_screen = 0
         self.app.set_screen(self.current_screen)
 
@@ -293,7 +293,10 @@ class GUIManager:
     def run_results_screen(self):
         frames = self.get_video_frames('output/processed_output_open_eyes.mp4')
         frames += self.get_video_frames('output/processed_output_closed_eyes.mp4')
+        start_time = time.time()
         while not self.stop_processes:
             for frame in frames:
                 self.update_result_screen(frame)
-                time.sleep(2.0/self.fps)
+                if (time.time() - start_time >= 60):
+                    self.return_to_start()
+                time.sleep(0.5/self.fps)

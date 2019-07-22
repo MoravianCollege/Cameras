@@ -123,7 +123,7 @@ class GUIManager:
         self.open_data, self.closed_data = [], []
 
     def get_alert_sound(self):
-        self.ding_sound = AudioSegment.from_wav("./src/Cameras/Ding.wav")
+        self.ding_sound = AudioSegment.from_wav("./media/Ding.wav")
 
     def run_gui(self):
         self.app = App(self)

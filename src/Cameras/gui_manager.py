@@ -254,7 +254,7 @@ class GUIManager:
             else:
                 self.update_running_screen(str(np.round((self.countdown_time - elapsed_time) * 10) / 10) + " seconds remaining")
 
-        self.update_running_screen(str(self.countdown_time) + " seconds remaining", "Running...")
+        self.update_running_screen(str(self.countdown_time) + " seconds remaining", "Recording...")
 
         self.do_running(self.CLOSED_EYES)
 
@@ -262,7 +262,7 @@ class GUIManager:
 
         self.update_running_screen("0.0%", "Processing...")
         self.do_processing()
-        self.update_running_screen(str(self.run_time) + " seconds remaining", "Running...")
+        self.update_running_screen(str(self.run_time) + " seconds remaining", "Recording...")
 
     def run_camera_screen(self):
         start_time = time.time()

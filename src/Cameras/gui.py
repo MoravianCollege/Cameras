@@ -14,7 +14,7 @@ class App:
 
         self.current_screen = 0
 
-        relief_pattern = RIDGE
+        relief_pattern = SUNKEN
         border_width = 10
 
         #Main Screen
@@ -64,7 +64,7 @@ class App:
         # self.running_screen = Button(self.running_screen, text="Continue", font=("Times New Roman", 24), width=15, pady=10, command=self.advance_screen)
         # self.running_screen.pack()
 
-        self.running_label = Label(self.running_screen, text="Running...", font=("Times New Roman", 48), pady=100, justify=CENTER)
+        self.running_label = Label(self.running_screen, text="Recording...", font=("Times New Roman", 48), pady=100, justify=CENTER)
         self.running_label.pack()
 
         self.running_timer = Label(self.running_screen, text="5.0", font=("Times New Roman", 48), pady=10, justify=CENTER)

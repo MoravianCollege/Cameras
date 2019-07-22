@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import PIL.Image, PIL.ImageTk
+import subprocess
 import time
 import threading
 
@@ -18,16 +19,12 @@ from sys import platform
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 try:
-    # Windows Import
+    # OpenPose import
     if platform == 'win32':
-        # Change variables to point to the python release folder (Release/x64 etc.)
+        # Change variables to point to the python release folder
         sys.path.append(dir_path + '/../../openpose/windows/python/openpose/Release')
         os.environ['PATH'] = os.environ['PATH'] + ';' + dir_path + '/../../openpose/windows/x64/Release;' + dir_path + '/../../openpose/windows/bin;'
         import pyopenpose as op
-    else:
-        # Change variables to point to the python release folder
-        sys.path.append('openpose/unix/build/python')
-        from openpose import pyopenpose as op
 except ImportError as e:
     print('Error: OpenPose library could not be found. Was `BUILD_PYTHON` enabled in CMake when OpenPose was built? Is the python script in the right folder?')
     raise e
@@ -45,7 +42,8 @@ except ValueError:
 # Create output directory if it does not exist
 if not os.path.exists('output'):
     os.makedirs('output')
-
+if not os.path.exists('output/json') and platform != 'win32':
+    os.makedirs('output/json')
 
 class ProcessThread(threading.Thread):
     def __init__(self, event, progress, gui):
@@ -53,22 +51,28 @@ class ProcessThread(threading.Thread):
         self.stopped = event
         self.progress = progress
         self.data = (gui.open_data, gui.closed_data)
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        self.writer_open = cv2.VideoWriter('output/processed_output_open_eyes.mp4', fourcc, 30, (gui.vid_width, gui.vid_height))
-        self.writer_closed = cv2.VideoWriter('output/processed_output_closed_eyes.mp4', fourcc, 30, (gui.vid_width, gui.vid_height))
         self.length = len(self.data[0]) + len(self.data[1])
 
-        # OpenPose setup
-        params = dict()
-        params['model_folder'] = 'openpose/models/'
-        params['face'] = True
-        params['hand'] = True
-        self.opWrapper = op.WrapperPython()
-        self.opWrapper.configure(params)
-        self.opWrapper.start()
-        self.datum = op.Datum()
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        if platform == 'win32':
+            self.writer_open = cv2.VideoWriter('output/processed_output_open_eyes.mp4', fourcc, 30, (gui.vid_width, gui.vid_height))
+            self.writer_closed = cv2.VideoWriter('output/processed_output_closed_eyes.mp4', fourcc, 30, (gui.vid_width, gui.vid_height))
+
+            # OpenPose setup
+            params = dict()
+            params['model_folder'] = 'openpose/models/'
+            params['face'] = True
+            params['hand'] = True
+            self.opWrapper = op.WrapperPython()
+            self.opWrapper.configure(params)
+            self.opWrapper.start()
+            self.datum = op.Datum()
+        else:
+            self.writer_open = cv2.VideoWriter('output/output_open_eyes.mp4', fourcc, 30, (gui.vid_width, gui.vid_height))
+            self.writer_closed = cv2.VideoWriter('output/output_closed_eyes.mp4', fourcc, 30, (gui.vid_width, gui.vid_height))
 
     def end_process(self, text='Process ended...'):
+        self.progress[0] = 1
         print(text)
         self.writer_open.release()
         self.writer_closed.release()
@@ -81,27 +85,55 @@ class ProcessThread(threading.Thread):
             self.stopped.set()
             self.end_process('Processing failed...')
             return
-        while not self.stopped.isSet():
-            # Process a frame from the file
-            frame = frames_completed
-            if finished_open:
-                frame -= length_open
-            self.datum.cvInputData = self.data[1 if finished_open else 0][frame]
-            self.opWrapper.emplaceAndPop([self.datum])
-            if finished_open:
-                self.writer_closed.write(self.datum.cvOutputData)
-            else:
-                self.writer_open.write(self.datum.cvOutputData)
 
-            frames_completed += 1
-            self.progress[0] = frames_completed / self.length
-            if frames_completed >= self.length:
-                self.stopped.set()
-                self.end_process('Processing complete...')
+        try:
+        # Process a frame each loop on Windows
+        # Otherwise write each unedited frame to a file
+            while not self.stopped.isSet():
+                frame = frames_completed
+                if finished_open:
+                    frame -= length_open
+                data = self.data[1 if finished_open else 0][frame]
+                if platform == 'win32':
+                    self.datum.cvInputData = data
+                    self.opWrapper.emplaceAndPop([self.datum])
+                    if finished_open:
+                        self.writer_closed.write(self.datum.cvOutputData)
+                    else:
+                        self.writer_open.write(self.datum.cvOutputData)
+                else:
+                    if finished_open:
+                        self.writer_closed.write(data)
+                    else:
+                        self.writer_open.write(data)
+
+                frames_completed += 1
+                if platform == 'win32':
+                    self.progress[0] = frames_completed / self.length
+                    if frames_completed >= self.length:
+                        self.stopped.set()
+                        self.end_process('Processing complete...')
+                        return
+                else:
+                    if frames_completed >= self.length:
+                        break
+                if frames_completed == length_open:
+                    finished_open = True
+            if platform == 'win32':
+                self.end_process('Processing terminated...')
                 return
-            if frames_completed == length_open:
-                finished_open = True
-        self.end_process('Processing terminated...')
+
+            # Process video on a non-Windows machine
+            self.writer_open.release()
+            self.writer_closed.release()
+            process = subprocess.Popen(['/bin/bash', 'scripts/run_openpose.sh'])
+            while process.poll() is None:
+                self.progress[0] = len(os.listdir('output/json')) / self.length
+                time.sleep(5)
+            self.end_process('Processing complete...')
+        except Exception as e:
+            self.end_process('Processing failed...')
+            print(e)
 
 
 class GUIManager:
@@ -123,7 +155,7 @@ class GUIManager:
         self.open_data, self.closed_data = [], []
 
     def get_alert_sound(self):
-        self.ding_sound = AudioSegment.from_wav("./src/Cameras/Ding.wav")
+        self.ding_sound = AudioSegment.from_wav("./media/Ding.wav")
 
     def run_gui(self):
         self.app = App(self)

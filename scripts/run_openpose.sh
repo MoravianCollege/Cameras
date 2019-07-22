@@ -1,10 +1,9 @@
 #!/bin/bash
 
 # Reset the JSON folder
-cd output
-rm -rf json
-mkdir json
-cd ../../openpose
+./scripts/reset_json.sh
+
+cd ../openpose
 
 # Run OpenPose on videos
 ./build/examples/openpose/openpose.bin --video ../Cameras/output/output_open_eyes.mp4 --display 0 --write_video  ../Cameras/output/processed_output_open_eyes.avi --write_json  ../Cameras/output/json

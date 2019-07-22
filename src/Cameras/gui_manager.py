@@ -19,9 +19,9 @@ from sys import platform
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 try:
-    # OpenPose import
+    # Windows Import
     if platform == 'win32':
-        # Change variables to point to the python release folder
+        # Change variables to point to the python release folder (Release/x64 etc.)
         sys.path.append(dir_path + '/../../openpose/windows/python/openpose/Release')
         os.environ['PATH'] = os.environ['PATH'] + ';' + dir_path + '/../../openpose/windows/x64/Release;' + dir_path + '/../../openpose/windows/bin;'
         import pyopenpose as op
@@ -39,11 +39,14 @@ try:
 except ValueError:
     video = 0
 
-# Create output directory if it does not exist
+# Create output directory and json subdirectory
 if not os.path.exists('output'):
     os.makedirs('output')
 if not os.path.exists('output/json') and platform != 'win32':
     os.makedirs('output/json')
+else:
+    subprocess.call('scripts/reset_json.sh')
+
 
 class ProcessThread(threading.Thread):
     def __init__(self, event, progress, gui):
@@ -61,8 +64,6 @@ class ProcessThread(threading.Thread):
             # OpenPose setup
             params = dict()
             params['model_folder'] = 'openpose/models/'
-            params['face'] = True
-            params['hand'] = True
             self.opWrapper = op.WrapperPython()
             self.opWrapper.configure(params)
             self.opWrapper.start()
@@ -101,25 +102,25 @@ class ProcessThread(threading.Thread):
                         self.writer_closed.write(self.datum.cvOutputData)
                     else:
                         self.writer_open.write(self.datum.cvOutputData)
-                else:
-                    if finished_open:
-                        self.writer_closed.write(data)
-                    else:
-                        self.writer_open.write(data)
-
-                frames_completed += 1
-                if platform == 'win32':
+                    frames_completed += 1
                     self.progress[0] = frames_completed / self.length
                     if frames_completed >= self.length:
                         self.stopped.set()
                         self.end_process('Processing complete...')
                         return
                 else:
+                    if finished_open:
+                        self.writer_closed.write(data)
+                    else:
+                        self.writer_open.write(data)
+                    frames_completed += 1
                     if frames_completed >= self.length:
                         break
+
                 if frames_completed == length_open:
                     finished_open = True
-            if platform == 'win32':
+
+            if self.stopped.isSet():
                 self.end_process('Processing terminated...')
                 return
 
@@ -127,7 +128,7 @@ class ProcessThread(threading.Thread):
             self.writer_open.release()
             self.writer_closed.release()
             process = subprocess.Popen(['/bin/bash', 'scripts/run_openpose.sh'])
-            while process.poll() is None:
+            while process.poll() is None or not self.stopped.isSet():
                 self.progress[0] = len(os.listdir('output/json')) / self.length
                 time.sleep(5)
             self.end_process('Processing complete...')
@@ -323,8 +324,13 @@ class GUIManager:
         return frames
 
     def run_results_screen(self):
-        frames = self.get_video_frames('output/processed_output_open_eyes.mp4')
-        frames += self.get_video_frames('output/processed_output_closed_eyes.mp4')
+        frames = []
+        if platform == 'win32':
+            frames += self.get_video_frames('output/processed_output_open_eyes.mp4')
+            frames += self.get_video_frames('output/processed_output_closed_eyes.mp4')
+        else:
+            frames += self.get_video_frames('output/processed_output_open_eyes.avi')
+            frames += self.get_video_frames('output/processed_output_closed_eyes.avi')
         start_time = time.time()
         while not self.stop_processes:
             for frame in frames:

@@ -103,7 +103,7 @@ class App:
         except:
             pass
 
-        self.parent.start(5.0, run_time)
+        self.parent.start(15.0, run_time)
 
     def set_screen(self, new_screen):
         self.screens[self.current_screen].place_forget()

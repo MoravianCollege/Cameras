@@ -14,7 +14,7 @@ class App:
 
         self.current_screen = 0
 
-        relief_pattern = RIDGE
+        relief_pattern = SUNKEN
         border_width = 10
 
         #Main Screen
@@ -38,7 +38,7 @@ class App:
         self.length_container.pack()
 
         self.length_setting = StringVar()
-        self.length_setting.set("5.0")
+        self.length_setting.set("5")
         self.length_box = Entry(self.length_container, textvariable=self.length_setting, font=("Times New Roman", 24), justify=CENTER)
         self.length_box.pack()
 
@@ -53,7 +53,7 @@ class App:
 
         Label(self.countdown_screen, text="Countdown", font=("Times New Roman", 48), justify=CENTER).pack()
 
-        self.countdown_timer = Label(self.countdown_screen, text="5.0", font=("Times New Roman", 48), justify=CENTER)
+        self.countdown_timer = Label(self.countdown_screen, text="15", font=("Times New Roman", 48), justify=CENTER)
         self.countdown_timer.pack()
 
         Label(self.countdown_screen, text="seconds until start", font=("Times New Roman", 48), justify=CENTER).pack()
@@ -64,10 +64,10 @@ class App:
         # self.running_screen = Button(self.running_screen, text="Continue", font=("Times New Roman", 24), width=15, pady=10, command=self.advance_screen)
         # self.running_screen.pack()
 
-        self.running_label = Label(self.running_screen, text="Running...", font=("Times New Roman", 48), pady=100, justify=CENTER)
+        self.running_label = Label(self.running_screen, text="Recording...", font=("Times New Roman", 48), pady=100, justify=CENTER)
         self.running_label.pack()
 
-        self.running_timer = Label(self.running_screen, text="5.0", font=("Times New Roman", 48), pady=10, justify=CENTER)
+        self.running_timer = Label(self.running_screen, text="5", font=("Times New Roman", 48), pady=10, justify=CENTER)
         self.running_timer.pack()
 
         self.quit_button = Button(self.running_screen, text="Back", font=("Times New Roman", 24), pady=10, command=self.parent.return_to_start)

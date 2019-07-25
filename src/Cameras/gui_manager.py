@@ -229,7 +229,7 @@ class GUIManager:
                 self.advance_screen()
                 break
 
-            self.update_running_screen('{:3.1f}%'.format(100 * progress[0]))
+            self.update_running_screen('{:3d}%'.format(100 * int(progress[0])))
             time.sleep(0.1)
 
         event.set()
@@ -256,14 +256,14 @@ class GUIManager:
                 # self.advance_screen()
                 break
             else:
-                self.update_running_screen(str(np.round((self.run_time - (current_frame / self.fps)) * 10) / 10) + " seconds remaining")
+                self.update_running_screen(str('{:3d}'.format(int(self.run_time - (current_frame / self.fps)))) + " seconds remaining")
 
     def run_running_screen(self):
         self.stop_processes = False
 
         self.do_running(self.OPEN_EYES)
 
-        self.update_running_screen(str(self.countdown_time) + " seconds remaining", "Close eyes for second recording")
+        self.update_running_screen(str('{:3d}'.format(int(self.run_time))) + " seconds remaining", "Close eyes for second recording")
 
         start_time = time.time()
 
@@ -276,17 +276,17 @@ class GUIManager:
                 # self.advance_screen()
                 break
             else:
-                self.update_running_screen(str(np.round((self.countdown_time - elapsed_time) * 10) / 10) + " seconds remaining")
+                self.update_running_screen(str('{:3d}'.format(int(self.countdown_time - elapsed_time))) + " seconds remaining")
 
-        self.update_running_screen(str(self.countdown_time) + " seconds remaining", "Running...")
+        self.update_running_screen(str(self.countdown_time) + " seconds remaining", "Recording...")
 
         self.do_running(self.CLOSED_EYES)
 
         play(self.ding_sound)
 
-        self.update_running_screen("0.0%", "Processing...")
+        self.update_running_screen("0%", "Processing...")
         self.do_processing()
-        self.update_running_screen(str(self.run_time) + " seconds remaining", "Running...")
+        self.update_running_screen(str(self.run_time) + " seconds remaining", "Recording...")
 
     def run_camera_screen(self):
         start_time = time.time()
@@ -302,7 +302,7 @@ class GUIManager:
             if frame is None:
                 break
 
-            self.update_camera_screen(str(np.round((self.countdown_time - elapsed_time) * 10) / 10), frame)
+            self.update_camera_screen(str('{:3d}'.format(int(self.countdown_time - elapsed_time))), frame)
 
     def get_video_frames(self, video):
         frames = []

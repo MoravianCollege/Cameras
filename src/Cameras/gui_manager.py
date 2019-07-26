@@ -8,7 +8,6 @@ import threading
 from pydub import AudioSegment
 from pydub.playback import play
 
-from argparse import ArgumentParser
 from Cameras.gui import App
 
 
@@ -30,22 +29,14 @@ except ImportError as e:
     raise e
 
 
-# Get video flag
-parser = ArgumentParser()
-parser.add_argument('--video', default='0', dest='video', type=str, help='The path to a video or number of the camera used for capture.')
-video = parser.parse_args().video
-try:
-    video = int(video)
-except ValueError:
-    video = 0
-
 # Create output directory and json subdirectory
 if not os.path.exists('output'):
     os.makedirs('output')
-if not os.path.exists('output/json') and platform != 'win32':
-    os.makedirs('output/json')
-else:
-    subprocess.call('scripts/reset_json.sh')
+if platform != 'win32':
+    if not os.path.exists('output/json'):
+        os.makedirs('output/json')
+    else:
+        subprocess.call('scripts/reset_json.sh')
 
 
 class ProcessThread(threading.Thread):
@@ -178,7 +169,7 @@ class GUIManager:
 
     def update_result_screen(self, frame):
         img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Fix color
-        img_ratio = 2 / 3
+        img_ratio = 0.5
         img = PIL.Image.fromarray(img).resize((int(img_ratio * self.app.width), int(img_ratio * self.app.height)),
                                               PIL.Image.ANTIALIAS)
         display_image = PIL.ImageTk.PhotoImage(master=self.app.results_screen, image=img)

@@ -167,15 +167,20 @@ class GUIManager:
         self.current_screen = 0
         self.app.set_screen(self.current_screen)
 
-    def update_result_screen(self, frame):
-        img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Fix color
-        img_ratio = 0.5
+    def frame_to_imagetk(self, frame, img_ratio):
+        img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) # Fix color
         img = PIL.Image.fromarray(img).resize((int(img_ratio * self.app.width), int(img_ratio * self.app.height)),
                                               PIL.Image.ANTIALIAS)
-        display_image = PIL.ImageTk.PhotoImage(master=self.app.results_screen, image=img)
-        self.app.result_image.config(image=display_image)
+        return PIL.ImageTk.PhotoImage(master=self.app.results_screen, image=img)
 
-        self.app.result_image.update()
+    def update_result_screen(self, frame1, frame2):
+        img_ratio = 1.0/3.0
+        img1, img2 = self.frame_to_imagetk(frame1, img_ratio), self.frame_to_imagetk(frame2, img_ratio)
+        self.app.result_image1.config(image=img1)
+        self.app.result_image2.config(image=img2)
+
+        self.app.result_image1.update()
+        self.app.result_image2.update()
 
     def update_camera_screen(self, status, frame):
         img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Fix color
@@ -326,17 +331,17 @@ class GUIManager:
         return frames
 
     def run_results_screen(self):
-        frames = []
+        frames1, frames2 = [], []
         if platform == 'win32':
-            frames += self.get_video_frames('output/processed_output_open_eyes.mp4')
-            frames += self.get_video_frames('output/processed_output_closed_eyes.mp4')
+            frames1 = self.get_video_frames('output/processed_output_open_eyes.mp4')
+            frames2 = self.get_video_frames('output/processed_output_closed_eyes.mp4')
         else:
-            frames += self.get_video_frames('output/processed_output_open_eyes.avi')
-            frames += self.get_video_frames('output/processed_output_closed_eyes.avi')
+            frames1 = self.get_video_frames('output/processed_output_open_eyes.avi')
+            frames2 = self.get_video_frames('output/processed_output_closed_eyes.avi')
         start_time = time.time()
         while not self.stop_processes:
-            for frame in frames:
-                self.update_result_screen(frame)
+            for frame1, frame2 in zip(frames1, frames2):
+                self.update_result_screen(frame1, frame2)
                 if (time.time() - start_time >= 60):
                     self.return_to_start()
                 time.sleep(0.5/self.fps)

@@ -99,8 +99,13 @@ class App:
 
         Label(self.results_screen, text="Results", font=("Times New Roman", 64), justify=CENTER, pady=50.0).pack()
 
-        self.result_image = Label(self.results_screen)
-        self.result_image.pack()
+        self.result_image_frame = Frame(self.results_screen)
+        self.result_image1 = Label(self.result_image_frame)
+        self.result_image2 = Label(self.result_image_frame)
+
+        self.result_image1.grid(row = 0, column = 0)
+        self.result_image2.grid(row = 0, column = 1)
+        self.result_image_frame.pack()
 
         results = "Sway averaged 0.2 m/s/s across the test."
         self.end_results = Label(self.results_screen, text=results, font=("Times New Roman", 36), pady=50, wraplength=self.width - 200.0, justify=CENTER)

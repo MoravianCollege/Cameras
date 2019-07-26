@@ -17,6 +17,8 @@ class App:
         relief_pattern = SUNKEN
         border_width = 10
 
+        self.loading_bar_width = 550
+
         #Main Screen
         self.main_screen = Frame(self.master, borderwidth=border_width, relief=relief_pattern)
         self.main_screen.place(relwidth=1.0, relheight=1.0)
@@ -45,6 +47,8 @@ class App:
         self.start_button = Button(self.main_screen, text="Start", font=("Times New Roman", 24), width=15, pady=10, command=self.start_button)
         self.start_button.pack()
 
+
+
         #Countdown Screen
         self.countdown_screen = Frame(self.master, borderwidth=border_width, relief=relief_pattern)
 
@@ -59,10 +63,12 @@ class App:
         Label(self.countdown_screen, text="seconds until start", font=("Times New Roman", 48), justify=CENTER).pack()
 
 
+
         #Running Screen
         self.running_screen = Frame(self.master, borderwidth=border_width, relief=relief_pattern)
         # self.running_screen = Button(self.running_screen, text="Continue", font=("Times New Roman", 24), width=15, pady=10, command=self.advance_screen)
         # self.running_screen.pack()
+        # self.running_screen.place(relwidth=1.0, relheight=1.0)
 
         self.running_label = Label(self.running_screen, text="Recording...", font=("Times New Roman", 48), pady=100, justify=CENTER)
         self.running_label.pack()
@@ -70,8 +76,22 @@ class App:
         self.running_timer = Label(self.running_screen, text="5", font=("Times New Roman", 48), pady=10, justify=CENTER)
         self.running_timer.pack()
 
+        self.loading_bar_placeholder = Frame(self.running_screen)
+        self.loading_bar_placeholder.pack()
+        self.loading_bar = Frame(self.loading_bar_placeholder, height=40, width=550)
+
+        self.loading_empty = Frame(self.loading_bar, bg="#E3E3E3", height=40, width=self.loading_bar_width)
+        self.loading_empty.grid(row=0, column=0, sticky=W)
+
+        self.loading_full = Frame(self.loading_bar, bg="green", height=40, width=0)
+        self.loading_full.grid(column=0, row=0, sticky=W)
+
+        #Spacing, cuz the dang pady on the button just makes it bigger... I guess I could set the size of the button to something exact but meh
+        Frame(self.running_screen, height=25).pack()
+
         self.quit_button = Button(self.running_screen, text="Back", font=("Times New Roman", 24), pady=10, command=self.parent.return_to_start)
         self.quit_button.pack()
+
 
 
         #Results Screen

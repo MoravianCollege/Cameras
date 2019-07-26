@@ -194,7 +194,7 @@ class GUIManager:
         self.app.countdown_timer.update()
         self.app.camera_image.update()
 
-    def update_running_screen(self, status="", title=""):
+    def update_running_screen(self, status="", title="", progress_bar=-1):
         if title != "":
             self.app.running_label.config(text=title)
             self.app.running_label.update()
@@ -202,6 +202,15 @@ class GUIManager:
         if status != "":
             self.app.running_timer.config(text = status)
             self.app.running_timer.update()
+
+        if progress_bar != -1:
+            self.app.loading_full.config(width=int(progress_bar*self.app.loading_bar_width))
+
+    def toggle_progress_bar(self, show=False):
+        if show:
+            self.app.loading_bar.pack()
+        else:
+            self.app.loading_bar.pack_forget()
 
     def advance_screen(self, new_screen=-1):
         if new_screen != -1:
@@ -234,7 +243,7 @@ class GUIManager:
                 self.advance_screen()
                 break
 
-            self.update_running_screen('{:3d}%'.format(100 * int(progress[0])))
+            self.update_running_screen(status='{:3d}%'.format(int(100 * progress[0])), progress_bar=progress[0])
             time.sleep(0.1)
 
         event.set()
@@ -290,7 +299,9 @@ class GUIManager:
         play(self.ding_sound)
 
         self.update_running_screen("0%", "Processing...")
+        self.toggle_progress_bar(True)
         self.do_processing()
+        self.toggle_progress_bar(False)
         self.update_running_screen(str(self.run_time) + " seconds remaining", "Recording...")
 
     def run_camera_screen(self):

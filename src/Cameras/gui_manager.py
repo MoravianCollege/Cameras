@@ -237,7 +237,7 @@ class GUIManager:
             if -delta < abs(progress[0] - 1) < delta:
                 self.advance_screen()
                 break
-            
+
             self.update_running_screen(status='{:3d}%'.format(int(100 * progress[0])), progress_bar=progress[0])
             time.sleep(0.1)
 

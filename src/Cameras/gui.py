@@ -17,7 +17,7 @@ class App:
         relief_pattern = SUNKEN
         border_width = 10
 
-        self.loading_bar_width = 550
+        self.loading_bar_width = int(self.master.winfo_screenwidth() * 0.33)
 
         #Main Screen
         self.main_screen = Frame(self.master, borderwidth=border_width, relief=relief_pattern)

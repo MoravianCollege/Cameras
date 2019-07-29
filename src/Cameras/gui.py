@@ -136,7 +136,7 @@ class App:
         self.left_side_text.grid(row=0, column=0)
 
         self.right_text = ("This program uses OpenPose, software which detects human figures in images and maps where there limbs, torso, and body parts are. \n"
-                           "Being able to detect where a person's body parts are, the program can analyze their movement, and thus measure postural sway \n"
+                           "Being able to detect where a person's body parts are, a program could analyze their movement, and thus measure postural sway \n"
                            "")
         self.right_side_text = Label(self.text_panels, text=self.right_text, font=("Times New Roman", 24), padx=25, justify=LEFT, wraplength=self.width/3, bg=self.background_color)
         self.right_side_text.grid(row=0, column=1)
@@ -176,9 +176,9 @@ class App:
         self.result_image2.grid(row = 0, column = 1)
         self.result_image_frame.pack()
 
-        # results = "Sway averaged 0.2 m/s/s across the test."
-        # self.end_results = Label(self.results_screen, text=results, font=("Times New Roman", 36), pady=50, wraplength=self.width - 200.0, justify=CENTER, bg=self.background_color)
-        # self.end_results.pack()
+        results = "Above is a visualization of what OpenPose detects on the video taken of you. Potentially, this information could be used to calculate someone's postural sway, and thus infer how progressed their Parkinson's disease is, or even give a general measure of balance. Further, this could be run on anyone's computer; simply ask a patient to download the program, and they can obtain objective measurements on themselves."
+        self.end_results = Label(self.results_screen, text=results, font=("Times New Roman", 36), pady=50, wraplength=self.width - 200.0, justify=CENTER, bg=self.background_color)
+        self.end_results.pack()
 
         self.back_button = Button(self.results_screen, text="Back", font=("Times New Roman", 24), width=15, pady=10, command=self.parent.return_to_start, bg=self.background_color)
         self.back_button.pack()

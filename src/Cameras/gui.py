@@ -176,9 +176,9 @@ class App:
         self.result_image2.grid(row = 0, column = 1)
         self.result_image_frame.pack()
 
-        results = "Sway averaged 0.2 m/s/s across the test."
-        self.end_results = Label(self.results_screen, text=results, font=("Times New Roman", 36), pady=50, wraplength=self.width - 200.0, justify=CENTER, bg=self.background_color)
-        self.end_results.pack()
+        # results = "Sway averaged 0.2 m/s/s across the test."
+        # self.end_results = Label(self.results_screen, text=results, font=("Times New Roman", 36), pady=50, wraplength=self.width - 200.0, justify=CENTER, bg=self.background_color)
+        # self.end_results.pack()
 
         self.back_button = Button(self.results_screen, text="Back", font=("Times New Roman", 24), width=15, pady=10, command=self.parent.return_to_start, bg=self.background_color)
         self.back_button.pack()

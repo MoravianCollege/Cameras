@@ -24,15 +24,12 @@ class App:
 
         #Main Screen
         self.main_screen = Frame(self.master, borderwidth=border_width, relief=relief_pattern)
-        self.main_screen.place(relwidth=1.0, relheight=1.0)
+        # self.main_screen.place(relwidth=1.0, relheight=1.0)
 
         self.width = self.main_screen.winfo_screenwidth()
         self.height = self.main_screen.winfo_screenheight()
 
-        # self.main_title = Label(self.main_screen, text="Instructions", font=("Times New Roman", 48), pady=50)
-        # self.main_title.pack()
-
-        self.image_holder = Frame(self.main_screen, pady=25)
+        self.image_holder = Frame(self.main_screen, pady=50)
         self.image_holder.pack()
 
         self.slide_one = Frame(self.image_holder)
@@ -71,16 +68,16 @@ class App:
         self.image_three = Label(self.slide_three, image=self.processing_graphic)
         self.image_three.pack()
 
-        self.length_title = Label(self.main_screen, text="Length of Test (seconds)", font=("Times New Roman", 24), wraplength=self.width - 200.0, justify=CENTER)
-        self.length_title.pack()
-
-        self.length_container = Frame(self.main_screen, pady=20)
-        self.length_container.pack()
-
-        self.length_setting = StringVar()
-        self.length_setting.set("5")
-        self.length_box = Entry(self.length_container, textvariable=self.length_setting, font=("Times New Roman", 24), justify=CENTER)
-        self.length_box.pack()
+        # self.length_title = Label(self.main_screen, text="Length of Test (seconds)", font=("Times New Roman", 24), wraplength=self.width - 200.0, justify=CENTER)
+        # self.length_title.pack()
+        #
+        # self.length_container = Frame(self.main_screen, pady=20)
+        # self.length_container.pack()
+        #
+        # self.length_setting = StringVar()
+        # self.length_setting.set("5")
+        # self.length_box = Entry(self.length_container, textvariable=self.length_setting, font=("Times New Roman", 24), justify=CENTER)
+        # self.length_box.pack()
 
         self.start_button = Button(self.main_screen, text="Start", font=("Times New Roman", 24), width=15, pady=10, command=self.start_button)
         self.start_button.pack()
@@ -114,9 +111,26 @@ class App:
         self.running_timer = Label(self.running_screen, text="5", font=("Times New Roman", 48), pady=10, justify=CENTER)
         self.running_timer.pack()
 
-        self.loading_bar_placeholder = Frame(self.running_screen)
+        self.quit_button = Button(self.running_screen, text="Back", font=("Times New Roman", 24), pady=10, command=self.parent.return_to_start)
+        self.quit_button.pack()
+
+
+
+        #Processing Screen
+        self.processing_screen = Frame(self.master, borderwidth=border_width, relief=relief_pattern)
+        self.processing_screen.place(relwidth=1.0, relheight=1.0)
+
+        self.processing_label = Label(self.processing_screen, text="Processing...", font=("Times New Roman", 48), pady=100,
+                                   justify=CENTER)
+        self.processing_label.pack()
+
+        self.processing_percentage = Label(self.processing_screen, text="5", font=("Times New Roman", 48), pady=10, justify=CENTER)
+        self.processing_percentage.pack()
+
+        self.loading_bar_placeholder = Frame(self.processing_screen)
         self.loading_bar_placeholder.pack()
         self.loading_bar = Frame(self.loading_bar_placeholder, height=40, width=550)
+        self.loading_bar.pack()
 
         self.loading_empty = Frame(self.loading_bar, bg="#E3E3E3", height=40, width=self.loading_bar_width)
         self.loading_empty.grid(row=0, column=0, sticky=W)
@@ -124,10 +138,10 @@ class App:
         self.loading_full = Frame(self.loading_bar, bg="green", height=40, width=0)
         self.loading_full.grid(column=0, row=0, sticky=W)
 
-        #Spacing, cuz the dang pady on the button just makes it bigger... I guess I could set the size of the button to something exact but meh
-        Frame(self.running_screen, height=25).pack()
+        # Spacing, cuz the dang pady on the button just makes it bigger... I guess I could set the size of the button to something exact but meh
+        Frame(self.processing_screen, height=25).pack()
 
-        self.quit_button = Button(self.running_screen, text="Back", font=("Times New Roman", 24), pady=10, command=self.parent.return_to_start)
+        self.quit_button = Button(self.processing_screen, text="Back", font=("Times New Roman", 24), pady=10, command=self.parent.return_to_start)
         self.quit_button.pack()
 
 
@@ -152,19 +166,19 @@ class App:
         self.back_button = Button(self.results_screen, text="Back", font=("Times New Roman", 24), width=15, pady=10, command=self.parent.return_to_start)
         self.back_button.pack()
 
-        self.screens = [self.main_screen, self.countdown_screen, self.running_screen, self.results_screen]
+        self.screens = [self.main_screen, self.countdown_screen, self.running_screen, self.processing_screen, self.results_screen]
 
     def start_gui(self):
         self.master.mainloop()
 
     def start_button(self):
 
-        run_time = 15.0
+        run_time = 0.1
 
-        try:
-            run_time = float(self.length_setting.get())
-        except:
-            pass
+        # try:
+        #     run_time = float(self.length_setting.get())
+        # except:
+        #     pass
 
         self.parent.start(15.0, run_time)
 

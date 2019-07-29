@@ -118,10 +118,10 @@ class ProcessThread(threading.Thread):
             # Process video on a non-Windows machine
             self.writer_open.release()
             self.writer_closed.release()
-            process = subprocess.Popen(['/bin/bash', 'scripts/run_openpose.sh'])
-            while process.poll() is None or not self.stopped.isSet():
-                self.progress[0] = len(os.listdir('output/json')) / self.length
-                time.sleep(5)
+            # process = subprocess.Popen(['/bin/bash', 'scripts/run_openpose.sh'])
+            # while process.poll() is None or not self.stopped.isSet():
+            #     self.progress[0] = len(os.listdir('output/json')) / self.length
+            #     time.sleep(5)
             self.end_process('Processing complete...')
         except Exception as e:
             self.end_process('Processing failed...')
@@ -194,23 +194,22 @@ class GUIManager:
         self.app.countdown_timer.update()
         self.app.camera_image.update()
 
-    def update_running_screen(self, status="", title="", progress_bar=-1):
+    def update_running_screen(self, status="", title=""):
         if title != "":
-            self.app.running_label.config(text=title)
+            self.app.running_label.config(text = title)
             self.app.running_label.update()
 
         if status != "":
             self.app.running_timer.config(text = status)
             self.app.running_timer.update()
 
+    def update_processing_screen(self, status="", progress_bar=-1):
+        if status != "":
+            self.app.processing_percentage.config(text = status)
+            self.app.processing_percentage.update()
+
         if progress_bar != -1:
             self.app.loading_full.config(width=int(progress_bar*self.app.loading_bar_width))
-
-    def toggle_progress_bar(self, show=False):
-        if show:
-            self.app.loading_bar.pack()
-        else:
-            self.app.loading_bar.pack_forget()
 
     def advance_screen(self, new_screen=-1):
         if new_screen != -1:
@@ -218,12 +217,14 @@ class GUIManager:
 
         else:
             self.current_screen += 1
-            self.current_screen = self.current_screen % 4
+            self.current_screen = self.current_screen % 5
 
         self.app.set_screen(self.current_screen)
 
-        if self.current_screen == 3:
+        if self.current_screen == 4:
             self.run_results_screen()
+        elif self.current_screen == 3:
+            self.do_processing()
         elif self.current_screen == 2:
             self.run_running_screen()
         elif self.current_screen == 1:
@@ -243,7 +244,7 @@ class GUIManager:
                 self.advance_screen()
                 break
 
-            self.update_running_screen(status='{:3d}%'.format(int(100 * progress[0])), progress_bar=progress[0])
+            self.update_processing_screen(status='{:3d}%'.format(int(100 * progress[0])), progress_bar=progress[0])
             time.sleep(0.1)
 
         event.set()
@@ -298,11 +299,7 @@ class GUIManager:
 
         play(self.ding_sound)
 
-        self.update_running_screen("0%", "Processing...")
-        self.toggle_progress_bar(True)
-        self.do_processing()
-        self.toggle_progress_bar(False)
-        self.update_running_screen(str(self.run_time) + " seconds remaining", "Recording...")
+        self.advance_screen()
 
     def run_camera_screen(self):
         start_time = time.time()

@@ -1,4 +1,7 @@
 from tkinter import *
+import cv2
+import PIL.Image, PIL.ImageTk
+
 
 class App:
 
@@ -26,12 +29,47 @@ class App:
         self.width = self.main_screen.winfo_screenwidth()
         self.height = self.main_screen.winfo_screenheight()
 
-        self.main_title = Label(self.main_screen, text="Instructions", font=("Times New Roman", 48), pady=50)
-        self.main_title.pack()
+        # self.main_title = Label(self.main_screen, text="Instructions", font=("Times New Roman", 48), pady=50)
+        # self.main_title.pack()
 
-        instructions = "This system will measure how much you sway when trying to stand still. To begin, press start. A screen will appear showing you the camera's perspective; stand in the center of the camera's view, facing the camera. After a count-down, the camera will start recording. Stand still during this time. Once done recording, the recording will be processed and you'll be able to see the results."
-        self.main_instructions = Label(self.main_screen, text=instructions, font=("Times New Roman", 24), pady=50, wraplength=self.width - 200.0, justify=CENTER)
-        self.main_instructions.pack()
+        self.image_holder = Frame(self.main_screen, pady=25)
+        self.image_holder.pack()
+
+        self.slide_one = Frame(self.image_holder)
+        self.slide_one.grid(row=0, column=0)
+        self.slide_two = Frame(self.image_holder)
+        self.slide_two.grid(row=0, column=1)
+        self.slide_three = Frame(self.image_holder)
+        self.slide_three.grid(row=0, column=2)
+
+        self.img_size = int(0.25 * self.width)
+
+        self.img_camera = PIL.Image.open("media/CameraGraphic.png").resize((self.img_size, self.img_size), PIL.Image.ANTIALIAS)
+        self.camera_graphic = PIL.ImageTk.PhotoImage(self.img_camera)
+
+        self.img_recording = PIL.Image.open("media/RecordingGraphic.png").resize((self.img_size, self.img_size), PIL.Image.ANTIALIAS)
+        self.recording_graphic = PIL.ImageTk.PhotoImage(self.img_recording)
+
+        self.img_processing = PIL.Image.open("media/ProcessingGraphic.png").resize((self.img_size, self.img_size), PIL.Image.ANTIALIAS)
+        self.processing_graphic = PIL.ImageTk.PhotoImage(self.img_processing)
+
+        self.image_title_one = Label(self.slide_one, text="Step 1 \n Stand in camera's view",
+                                     font=("Times New Roman", 30))
+        self.image_title_one.pack()
+        self.image_one = Label(self.slide_one, image=self.camera_graphic)
+        self.image_one.pack()
+
+        self.image_title_two = Label(self.slide_two, text="Step 2 \n Wait for recording",
+                                     font=("Times New Roman", 30))
+        self.image_title_two.pack()
+        self.image_two = Label(self.slide_two, image=self.recording_graphic)
+        self.image_two.pack()
+
+        self.image_title_three = Label(self.slide_three, text="Step 3 \n Processing of video",
+                                     font=("Times New Roman", 30))
+        self.image_title_three.pack()
+        self.image_three = Label(self.slide_three, image=self.processing_graphic)
+        self.image_three.pack()
 
         self.length_title = Label(self.main_screen, text="Length of Test (seconds)", font=("Times New Roman", 24), wraplength=self.width - 200.0, justify=CENTER)
         self.length_title.pack()
